@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(MyApp());
@@ -10,6 +11,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Configuración del ESP32',
+      debugShowCheckedModeBanner: false,
       home: WiFiConfigScreen(),
     );
   }
@@ -24,6 +26,7 @@ class _WiFiConfigScreenState extends State<WiFiConfigScreen> {
   final TextEditingController _ssidController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
+  bool _isPasswordVisible = false;
 
   Future<void> sendConfigData() async {
     final ssid = _ssidController.text.trim();
@@ -99,16 +102,40 @@ class _WiFiConfigScreenState extends State<WiFiConfigScreen> {
             TextField(
               controller: _ssidController,
               decoration: InputDecoration(labelText: 'SSID de la red Wi-Fi'),
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(30),
+              ],
             ),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Contraseña del Wi-Fi'),
-              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Contraseña del Wi-Fi',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                ),
+              ),
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(30),
+              ],
+              obscureText: !_isPasswordVisible,
             ),
             TextField(
               controller: _phoneNumberController,
               decoration: InputDecoration(labelText: 'Número de teléfono'),
-              keyboardType: TextInputType.phone,
+              keyboardType: TextInputType.number, // 👈 Cambia a solo números
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly, //
+                LengthLimitingTextInputFormatter(10),
+              ],
             ),
             SizedBox(height: 20),
             ElevatedButton(
